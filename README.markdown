@@ -104,12 +104,13 @@ The serving layer presents results to users via a web interface and APIs.
 ### Steps to Run
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/<your-username>/energy-forecasting-lambda.git
+   git clone https://github.com/NTRajapaksha/iot-lambda.git
    cd energy-forecasting-lambda
    ```
 
 2. **Prepare Data**:
    - Place your raw energy data CSV (e.g., `energy_data.csv`) in the `data/` directory.
+   - You can find the dataset here: https://archive.ics.uci.edu/dataset/235/individual+household+electric+power+consumption
    - Ensure the CSV has columns like `Date`, `Time`, `Global_active_power`, etc., as expected by `ingest.py`.
 
 3. **Start Docker Containers**:
