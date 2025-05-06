@@ -251,21 +251,6 @@ docker-compose down
 - **Scalability**: Optimize Parquet partitioning for larger datasets and adjust Spark configurations.
 - **Dashboard Enhancements**: Add interactive charts and filters for better user experience.
 
-## Contributing
-Contributions are welcome! Please:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit changes (`git commit -m 'Add your feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
-
-## License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
 ## Acknowledgments
 - Built with open-source tools: Apache Spark, Kafka, Flask, and Docker.
 - Inspired by real-world IoT energy management challenges.
-
----
-
-For issues or questions, please open a GitHub issue or contact [your-email@example.com].
