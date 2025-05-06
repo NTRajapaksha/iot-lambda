@@ -22,6 +22,9 @@ The system serves two primary groups:
 
 The project follows a **Lambda architecture**, which separates data processing into three layers: **Batch**, **Streaming**, and **Serving**. This ensures both comprehensive historical analysis and low-latency real-time insights.
 
+![image](https://github.com/user-attachments/assets/12cd05df-372e-4eac-acd6-58f2a65cfe5d)
+
+
 ### 1. Batch Layer
 The batch layer processes historical energy data to generate predictive models and statistical insights.
 
