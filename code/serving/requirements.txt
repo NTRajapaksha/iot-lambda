@@ -1,0 +1,6 @@
+flask==2.3.3
+werkzeug==3.0.1
+pandas==2.1.4
+plotly==5.18.0
+gunicorn==21.2.0
+pyspark==3.5.0

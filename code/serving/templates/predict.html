@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Result - IoT Energy Analytics</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        body { 
+            padding-top: 0; 
+            background-color: #ecf0f1; 
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .dashboard-header { 
+            background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+            color: white; 
+            padding: 25px 0; 
+            margin-bottom: 30px;
+            border-bottom: 5px solid var(--accent-color);
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .card { 
+            margin-bottom: 25px; 
+            box-shadow: var(--card-shadow);
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-header h5 i {
+            margin-right: 10px;
+        }
+        
+        .card-header .btn-outline-secondary {
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .card-header .btn-outline-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+        
+        .card-body {
+            padding: 20px;
+            background-color: white;
+        }
+        
+        .card-footer {
+            background-color: var(--light-bg);
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-box { 
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .result-box.success { 
+            background-color: #e8f8f5; 
+            border-left: 6px solid var(--accent-color);
+            box-shadow: 0 6px 10px rgba(26, 188, 156, 0.1);
+        }
+        
+        .result-box.error { 
+            background-color: #fdeaed; 
+            border-left: 6px solid var(--danger-color);
+            box-shadow: 0 6px 10px rgba(231, 76, 60, 0.1);
+        }
+        
+        .input-group-text { 
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            height: auto;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            border-color: var(--secondary-color);
+        }
+        
+        .form-label { 
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline-secondary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.2s;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        
+        footer p {
+            margin-bottom: 0;
+        }
+        
+        #lastUpdated {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        /* Prediction result animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-result {
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        .display-4 {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        .lead {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        /* Input parameters card styling */
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        .card-header.bg-light {
+            background-color: #f1f2f6 !important;
+            color: var(--primary-color);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header.bg-light h6 {
+            font-weight: 600;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="container">
+            <h1><i class="fas fa-bolt"></i> Prediction Result</h1>
+            <p>IoT Energy Consumption Analytics</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calculator"></i> Predict Active Power</h5>
+                        <a href="/" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if error %}
+                            <div class="result-box error animate-result">
+                                <div class="row align-items-center">
+                                    <div class="col-md-1 text-center">
+                                        <i class="fas fa-exclamation-circle fa-3x text-danger"></i>
+                                    </div>
+                                    <div class="col-md-11">
+                                        <h4 class="text-danger">Error</h4>
+                                        <p>{{ error }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if prediction is not none %}
+                            <div class="result-box success animate-result">
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                        <h2 class="display-4">{{ prediction }} kW</h2>
+                                        <p class="lead">Predicted Active Power</p>
+                                        <div class="badge bg-info p-2 mb-3">Based on the latest model</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <form action="/predict" method="POST" class="needs-validation" novalidate>
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6><i class="fas fa-sliders-h"></i> Input Parameters</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="Voltage" class="form-label">Voltage (V)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control" id="Voltage" name="Voltage" value="230" required>
+                                                <span class="input-group-text">V</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="current" class="form-label">Current (A)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control" id="current" name="current" value="0.01" required>
+                                                <span class="input-group-text">A</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="Sub_metering_1" class="form-label">Sub-metering 1</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control" id="Sub_metering_1" name="Sub_metering_1" value="0.5" required>
+                                                <span class="input-group-text">kW</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="Sub_metering_2" class="form-label">Sub-metering 2</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control" id="Sub_metering_2" name="Sub_metering_2" value="0.3" required>
+                                                <span class="input-group-text">kW</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="Sub_metering_3" class="form-label">Sub-metering 3</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control" id="Sub_metering_3" name="Sub_metering_3" value="0.2" required>
+                                                <span class="input-group-text">kW</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="hour" class="form-label">Hour</label>
+                                            <select class="form-select" id="hour" name="hour" required>
+                                                {% for h in range(24) %}
+                                                <option value="{{ h }}" {% if h == 12 %}selected{% endif %}>{{ h }}:00</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="day_of_week" class="form-label">Day of Week</label>
+                                            <select class="form-select" id="day_of_week" name="day_of_week" required>
+                                                <option value="1">Monday</option>
+                                                <option value="2">Tuesday</option>
+                                                <option value="3">Wednesday</option>
+                                                <option value="4">Thursday</option>
+                                                <option value="5">Friday</option>
+                                                <option value="6">Saturday</option>
+                                                <option value="7">Sunday</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="month" class="form-label">Month</label>
+                                            <select class="form-select" id="month" name="month" required>
+                                                <option value="1">January</option>
+                                                <option value="2">February</option>
+                                                <option value="3">March</option>
+                                                <option value="4" selected>April</option>
+                                                <option value="5">May</option>
+                                                <option value="6">June</option>
+                                                <option value="7">July</option>
+                                                <option value="8">August</option>
+                                                <option value="9">September</option>
+                                                <option value="10">October</option>
+                                                <option value="11">November</option>
+                                                <option value="12">December</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-bolt"></i> Predict
+                                    </button>
+                                    <a href="/" class="btn btn-outline-secondary">
+                                        <i class="fas fa-chart-line"></i> Back to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center">
+            <p>Last Updated: <span id="lastUpdated"></span></p>
+            <p>Group 05 - DS403.3 Big Data Programming</p>
+        </footer>
+    </div>
+
+    <script>
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+
+        // Update the last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleString();
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLastUpdated();
+            setInterval(updateLastUpdated, 1000);
+            
+            // If there's a prediction result, add some visual enhancements
+            {% if prediction is not none %}
+            const resultDisplay = document.querySelector('.display-4');
+            
+            // Add a simple counter animation to the prediction result
+            const finalValue = parseFloat('{{ prediction }}');
+            let startValue = 0;
+            const duration = 1500; // ms
+            const frameDuration = 16; // ms per frame (~60fps)
+            const totalFrames = Math.round(duration / frameDuration);
+            let frame = 0;
+            
+            function easeOutQuad(x) {
+                return 1 - (1 - x) * (1 - x);
+            }
+            
+            function animateValue() {
+                if (frame < totalFrames) {
+                    frame++;
+                    const progress = easeOutQuad(frame / totalFrames);
+                    const currentValue = startValue + progress * (finalValue - startValue);
+                    resultDisplay.textContent = currentValue.toFixed(3) + ' kW';
+                    requestAnimationFrame(animateValue);
+                } else {
+                    resultDisplay.textContent = finalValue.toFixed(3) + ' kW';
+                }
+            }
+            
+            if (!isNaN(finalValue)) {
+                requestAnimationFrame(animateValue);
+            }
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

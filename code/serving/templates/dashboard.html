@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Energy Analytics Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        body { 
+            padding-top: 0; 
+            background-color: #ecf0f1; 
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .dashboard-header { 
+            background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+            color: white; 
+            padding: 25px 0; 
+            margin-bottom: 30px;
+            border-bottom: 5px solid var(--accent-color);
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .card { 
+            margin-bottom: 25px; 
+            box-shadow: var(--card-shadow);
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-bottom: none;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-header h5 i {
+            margin-right: 10px;
+        }
+        
+        .card-body {
+            padding: 20px;
+            background-color: white;
+        }
+        
+        .anomaly-alert { 
+            background-color: #fee8e7; 
+            border-left: 4px solid var(--danger-color); 
+            padding: 12px; 
+            margin-bottom: 12px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .anomaly-alert:hover {
+            transform: scale(1.02);
+            background-color: #fdd9d7;
+        }
+        
+        .anomaly-container { 
+            max-height: 400px; 
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .anomaly-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .anomaly-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .anomaly-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .anomaly-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .anomaly-notification { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: linear-gradient(135deg, #ff5252, #e74c3c); 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: none; 
+            z-index: 1000; 
+            animation: fadeInOut 4s ease-in-out;
+            font-weight: 600;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+        
+        .stat-card {
+            text-align: center;
+            border-radius: 10px;
+            transition: all 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .stat-card p {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+        
+        .anomaly-stat {
+            background-color: #fdedec;
+            border-bottom: 3px solid var(--danger-color);
+        }
+        
+        .forecast-stat {
+            background-color: #ebf5fb;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-group {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .input-group-text {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            height: auto;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            border-color: var(--secondary-color);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        
+        footer p {
+            margin-bottom: 0;
+        }
+        
+        #lastUpdated {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        #combinedChart {
+            border-radius: 8px;
+            overflow: hidden;
+            height: 400px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Pulsating effect for anomaly count */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--secondary-color);
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="container">
+            <h1><i class="fas fa-bolt"></i> IoT Energy Consumption Analytics</h1>
+            <p>Lambda Architecture for Anomaly Detection and Forecasting</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Combined Plot -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Energy Consumption and Anomalies</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="combinedChart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Anomalies List -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Recent Anomalies</h5>
+                    </div>
+                    <div class="card-body anomaly-container" id="anomalyList">
+                        <!-- This will be populated dynamically by JavaScript -->
+                        <p id="noAnomaliesMsg" class="text-center text-muted">No anomalies detected recently.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Model Metrics -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-brain"></i> Model Performance</h5>
+                    </div>
+                    <div class="card-body" id="modelMetrics">
+                        <!-- This will be populated dynamically by JavaScript -->
+                        <div class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="text-muted">Loading model metrics...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- System Stats -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tachometer-alt"></i> System Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="stat-card anomaly-stat">
+                                    <div id="anomalyCountWrapper">
+                                        <h3 id="anomalyCount" class="pulse">0</h3>
+                                        <p><i class="fas fa-exclamation-circle"></i> Anomalies Detected</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-card forecast-stat">
+                                    <h3 id="forecastCount">0</h3>
+                                    <p><i class="fas fa-chart-bar"></i> Forecast Points</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Form -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calculator"></i> Predict Active Power</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead mb-4">Enter the values below to predict active power using the trained model.</p>
+                        <form action="/predict" method="POST" class="needs-validation" novalidate>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="Voltage" class="form-label">Voltage (V)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" id="Voltage" name="Voltage" value="230" required>
+                                        <span class="input-group-text">V</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="current" class="form-label">Current (A)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control" id="current" name="current" value="0.01" required>
+                                        <span class="input-group-text">A</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="Sub_metering_1" class="form-label">Sub-metering 1</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control" id="Sub_metering_1" name="Sub_metering_1" value="0.5" required>
+                                        <span class="input-group-text">kW</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="Sub_metering_2" class="form-label">Sub-metering 2</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control" id="Sub_metering_2" name="Sub_metering_2" value="0.3" required>
+                                        <span class="input-group-text">kW</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="Sub_metering_3" class="form-label">Sub-metering 3</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control" id="Sub_metering_3" name="Sub_metering_3" value="0.2" required>
+                                        <span class="input-group-text">kW</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="hour" class="form-label">Hour</label>
+                                    <select class="form-select" id="hour" name="hour" required>
+                                        {% for h in range(24) %}
+                                        <option value="{{ h }}" {% if h == 12 %}selected{% endif %}>{{ h }}:00</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="day_of_week" class="form-label">Day of Week</label>
+                                    <select class="form-select" id="day_of_week" name="day_of_week" required>
+                                        <option value="1">Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                        <option value="7">Sunday</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="month" class="form-label">Month</label>
+                                    <select class="form-select" id="month" name="month" required>
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4" selected>April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-bolt"></i> Predict Power
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center">
+            <p>Last Updated: <span id="lastUpdated"></span></p>
+            <p>Group 05 - DS403.3 Big Data Programming</p>
+        </footer>
+    </div>
+
+    <!-- Anomaly notification div -->
+    <div id="anomalyNotification" class="anomaly-notification">
+        <i class="fas fa-exclamation-circle"></i> New anomaly detected!
+    </div>
+
+    <script>
+        // Global variables to track state
+        let lastAnomalyTimestamp = '';
+        let anomalyCount = 0;
+        let forecastCount = 0;
+        let knownAnomalies = new Set();
+        let updateInterval = 30000; // 30 seconds by default
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            setInterval(updateDashboard, updateInterval);
+            
+            // Update the last updated time
+            updateLastUpdated();
+            setInterval(updateLastUpdated, 1000);
+        });
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleString();
+        }
+
+        function updateDashboard() {
+            Promise.all([
+                fetch('/api/forecasts').then(res => {
+                    if (!res.ok) throw new Error('Server down');
+                    return res.json();
+                }),
+                fetch('/api/anomalies').then(res => {
+                    if (!res.ok) throw new Error('Server down');
+                    return res.json();
+                }),
+                fetch('/api/model_info').then(res => {
+                    if (!res.ok) throw new Error('Server down');
+                    return res.json();
+                })
+            ]).then(([forecastsData, anomaliesData, modelInfo]) => {
+                // Update the chart
+                updateChart(forecastsData, anomaliesData);
+                
+                // Update the anomaly list
+                updateAnomalyList(anomaliesData);
+                
+                // Update model metrics
+                updateModelMetrics(modelInfo);
+                
+                // Update counts - showing full count not just visible ones
+                updateSystemStats();
+                
+                // Check for new anomalies
+                checkForNewAnomalies(anomaliesData);
+            }).catch(err => {
+                console.error('Fetch error:', err);
+            });
+        }
+
+        function updateChart(forecastsData, anomaliesData) {
+            const forecastTrace = {
+                x: forecastsData.map(d => d.timestamp),
+                y: forecastsData.map(d => d.value),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Forecast',
+                line: { color: '#3498db', width: 2 }
+            };
+            const actualTrace = {
+                x: forecastsData.map(d => d.timestamp),
+                y: forecastsData.map(d => d.active_power),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Actual',
+                line: { color: '#1abc9c', width: 2 }
+            };
+            const anomalyTrace = {
+                x: anomaliesData.map(d => d.timestamp),
+                y: anomaliesData.map(d => d.value),
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Anomalies',
+                marker: { color: '#e74c3c', size: 10, symbol: 'diamond' }
+            };
+            const layout = {
+                title: '<b>Energy Consumption: Actual vs Forecast with Anomalies</b>',
+                titlefont: { family: "'Segoe UI', sans-serif", size: 18 },
+                xaxis: { 
+                    title: 'Time',
+                    gridcolor: '#ecf0f1',
+                    linecolor: '#bdc3c7'
+                },
+                yaxis: { 
+                    title: 'Power Consumption (kW)',
+                    gridcolor: '#ecf0f1',
+                    linecolor: '#bdc3c7'
+                },
+                margin: { l: 60, r: 40, b: 60, t: 50 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                legend: {
+                    x: 0.01,
+                    y: 0.99,
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bordercolor: '#bdc3c7',
+                    borderwidth: 1
+                },
+                hovermode: 'closest'
+            };
+            Plotly.newPlot('combinedChart', [forecastTrace, actualTrace, anomalyTrace], layout);
+        }
+
+        function updateAnomalyList(anomalies) {
+            const anomalyListElement = document.getElementById('anomalyList');
+            const noAnomaliesMsg = document.getElementById('noAnomaliesMsg');
+            
+            if (anomalies.length === 0) {
+                noAnomaliesMsg.style.display = 'block';
+                return;
+            }
+            
+            noAnomaliesMsg.style.display = 'none';
+            
+            // Clear existing content except the no anomalies message
+            const children = Array.from(anomalyListElement.children);
+            children.forEach(child => {
+                if (child.id !== 'noAnomaliesMsg') {
+                    anomalyListElement.removeChild(child);
+                }
+            });
+            
+            // Add anomalies - only show 50 in the list for better performance
+            anomalies.slice(0, 50).forEach(anomaly => {
+                const anomalyDiv = document.createElement('div');
+                anomalyDiv.className = 'anomaly-alert';
+                
+                let formattedTime;
+                try {
+                    const date = new Date(anomaly.timestamp);
+                    formattedTime = date.toLocaleString();
+                } catch (e) {
+                    formattedTime = anomaly.timestamp;
+                }
+                
+                anomalyDiv.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong><i class="fas fa-exclamation-circle text-danger"></i> ${anomaly.device_id}</strong>
+                        <span class="badge bg-danger">${parseFloat(anomaly.value).toFixed(3)} kW</span>
+                    </div>
+                    <small class="text-muted"><i class="far fa-clock"></i> ${formattedTime}</small>
+                `;
+                
+                anomalyListElement.insertBefore(anomalyDiv, noAnomaliesMsg);
+            });
+        }
+
+        function updateModelMetrics(modelInfo) {
+            const metricsContainer = document.getElementById('modelMetrics');
+            
+            if (!modelInfo || Object.keys(modelInfo).length === 0) {
+                metricsContainer.innerHTML = '<p class="text-center text-muted">No model metrics available.</p>';
+                return;
+            }
+            
+            metricsContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-primary">${parseFloat(modelInfo.rmse).toFixed(3)}</h3>
+                                <p class="text-muted">RMSE</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-success">${parseFloat(modelInfo.r2).toFixed(3)}</h3>
+                                <p class="text-muted">R²</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-warning">${parseFloat(modelInfo.mae).toFixed(3)}</h3>
+                                <p class="text-muted">MAE</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <p class="mb-1"><i class="fas fa-calendar-alt text-info"></i> Last Trained</p>
+                                <p class="text-muted small">${modelInfo.created_at}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateSystemStats() {
+            fetch('/api/counts').then(res => {
+                if (!res.ok) throw new Error('Server down');
+                return res.json();
+            }).then(data => {
+                document.getElementById('anomalyCount').textContent = data.anomaly_count;
+                document.getElementById('forecastCount').textContent = data.forecast_count;
+                
+                // Add pulse animation to anomaly count if greater than zero
+                const anomalyCountWrapper = document.getElementById('anomalyCountWrapper');
+                if (data.anomaly_count > 0) {
+                    anomalyCountWrapper.classList.add('pulse');
+                } else {
+                    anomalyCountWrapper.classList.remove('pulse');
+                }
+            }).catch(err => {
+                console.error('Fetch error:', err);
+            });
+        }
+
+        function checkForNewAnomalies(anomalies) {
+            if (anomalies.length === 0) return;
+            
+            // Sort anomalies by timestamp (newest first)
+            anomalies.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const latestAnomaly = anomalies[0];
+            
+            // Check if this is a new anomaly we haven't seen before
+            if (!knownAnomalies.has(latestAnomaly.timestamp)) {
+                // If this is our first check, just add all anomalies without notification
+                if (knownAnomalies.size === 0) {
+                    anomalies.forEach(a => knownAnomalies.add(a.timestamp));
+                } else {
+                    // This is a new anomaly, show notification
+                    showAnomalyNotification();
+                    knownAnomalies.add(latestAnomaly.timestamp);
+                }
+            }
+        }
+
+        function showAnomalyNotification() {
+            const notification = document.getElementById('anomalyNotification');
+            notification.style.display = 'block';
+            
+            // Hide after animation completes
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 4000);
+        }
+        
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+</body>
+</html>
