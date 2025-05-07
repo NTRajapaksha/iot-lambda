@@ -2,7 +2,7 @@
 
 This project implements a **Lambda architecture** to process and analyze energy consumption data from IoT devices. It combines **batch processing** for historical data analysis with **real-time streaming** for immediate insights, enabling accurate energy demand forecasting and anomaly detection. Built with scalable tools like **Apache Spark**, **Kafka**, **HDFS**, and **Flask**, the system provides a user-friendly dashboard and APIs to access results, making it valuable for utility companies and smart home users.
 
-You can find a **demo video** here: https://drive.google.com/file/d/1P0I6k2g69t6YIbsBq42UrTJ6ZcgV92iY/view?usp=sharing
+You can find a **sample demo video** here: https://drive.google.com/file/d/1WvP_hZAEpvfMvYdoNeJbT0s2JbA5uHGW/view?usp=sharing
 
 ## Introduction
 
