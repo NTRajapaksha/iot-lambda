@@ -24,7 +24,7 @@ The system serves two primary groups:
 
 The project follows a **Lambda architecture**, which separates data processing into three layers: **Batch**, **Streaming**, and **Serving**. This ensures both comprehensive historical analysis and low-latency real-time insights.
 
-![diagram-export-5-9-2025-11_50_25-AM](https://github.com/user-attachments/assets/22583263-843c-4920-9bb7-34749bd5c063)
+![diagram-export-5-9-2025-12_28_12-PM](https://github.com/user-attachments/assets/7b98cea1-a71f-40df-b223-ee16807c6b64)
 
 
 ### 1. Batch Layer
